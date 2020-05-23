@@ -1,57 +1,37 @@
+#include "btree.h"
 
-typedef struct pair_t {
-	int chave;
-	void *valor;
-} pair_t;
-
-
-typedef struct noh_t {
-	bool eh_folha;
-	int n_chaves;
-
-	struct noh_t **children;
-	pair_t **chaves;
-} noh_t;
-
-
-typedef struct barvore_t {
-	int ordem;
-	noh *raiz;
-} BArvore;
-
-
-BArvore* barvore_new(int ordem) {
-	BArvore* ba = malloc(sizeof(BArvore));
-	assert(ba != NULL);
+BTree* btree_new(int order) {
+	BTree* bt = malloc(sizeof(BTree));
+	assert(bt != NULL);
 
 	#if DEBUG
 	printf("allocated new b-tree of order %d\n", order);
 	#endif
 
 	// Após alocar, temos que inicializar a B-Tree
-	barvore_init(ba, ordem);
+	btree_init(bt, order);
 
-	return ba;
+	return bt;
 }
 
-void barvore_init(BArvore *ba, int ordem) {
-	assert(ba != NULL);
+void btree_init(BTree *bt, int order) {
+	assert(bt != NULL);
 
-	ba->ordem = order;
-	ba->raiz = _node_new(ordem, TRUE);
+	bt->order = order;
+	bt->root = _node_new(order, TRUE);
 }
 
-node_position barvore_find(BArvore* ba, int chave) {
-	assert(ba != NULL);
+node_position btree_find(BTree* bt, int key) {
+	assert(bt != NULL);
 
 	#if DEBUG
 	printf("calling _btree_find_node() over key: %d\n", key);
 	#endif
 
-	return _barvore_busca_noh(ba->raiz, chave);
+	return _btree_find_node(bt->root, key);
 }
 
-node_position _barvore_busca_noh(noh_t* node, int chave) {
+node_position _btree_find_node(node_t* node, int key) {
 	assert(node != NULL);
 
 	int pos;
@@ -62,7 +42,7 @@ node_position _barvore_busca_noh(noh_t* node, int chave) {
 	}
 	else {
 		// Se a chave não foi encontrada
-		if (node->eh_folha) {
+		if (node->is_leaf) {
 			// e o nó atual é uma folha,
 			// então key não pertence à B-Tree
 			return _node_position_new(NULL, -1);
